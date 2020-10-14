@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  
+    <style>
+
+      .rowLabel {
+        float: left;
+        width: 15%;
+        margin-top: 6px;
+      }
+      
+      .rowInput {
+        float: left;
+        width: 85%;
+        margin-top: 6px;
+      }
+      
+      * {
+        box-sizing: border-box;
+      }
+    
+      input {
+        border: 1px solid transparent;
+        background-color: #f1f1f1;
+        padding: 10px;
+        font-size: 16px;
+      }
+
+      input[type=text] {
+        background-color: #f1f1f1;
+        width: 100%;
+      }
+      
+      input[type=submit] {
+        background-color: DodgerBlue;
+        color: #fff;
+        cursor: pointer;
+      }      
+      
+    </style>
+
+    <script>
+
+      /*
+        function and .withSuccssHandler needed for running scripts and returning values in html
+      */
+      
+      function onSuccess(generatedInfo) {
+        document.getElementById("date").value = generatedInfo[0];
+        document.getElementById("po").value = generatedInfo[1];
+        document.getElementById("vendor").value = generatedInfo[2];
+        document.getElementById("sales").value = generatedInfo[3];
+        document.getElementById("cost").value = generatedInfo[4];
+      }
+            
+      google.script.run.withSuccessHandler(onSuccess)    
+        .extractTextFromPDF();
+
+      function generatePDFPreview(id) {
+        var iframePrev = document.createElement("iframe");
+        iframePrev.setAttribute("src", "https://drive.google.com/file/d/"+ id + "/preview");
+        iframePrev.style.width = "800px";
+        iframePrev.style.height = "800px";
+        document.body.appendChild(iframePrev);
+      }
+            
+      google.script.run.withSuccessHandler(generatePDFPreview)
+        .getID();
+
+      function generateOCRPreview(text) {
+        document.getElementById("ocr").innerHTML = text;
+      }
+
+      google.script.run.withSuccessHandler(generateOCRPreview)
+        .getOCRText();
+
+      function generateOCRarray(array) {
+        
+        document.getElementById("date");
+        document.getElementById("po");
+        document.getElementById("vendor");        
+        document.getElementById("sales");
+        document.getElementById("cost");      
+        
+        document.getElementById("test").innerHTML = array;
+        return array;
+      }
+    
+      google.script.run.withSuccessHandler(generateOCRarray)
+        .getOCRarray();
+        
+
+      function clearField(id) {
+        document.getElementById(id).value = '';
+      }
+      
+      function submitForm(add) {
+                
+        var date = document.getElementById("date").value;
+        var po = document.getElementById("po").value;
+        var vendor = document.getElementById("vendor").value;
+        var sales = document.getElementById("sales").value;
+        var cost = document.getElementById("cost").value;
+        var addEntry = add;
+                
+        google.script.run
+          .submitInfo(date, po, vendor, sales, cost, addEntry);
+        google.script.host.close();
+      }
+      
+      // Removes last entry on close which is a placeholder for pdf information
+      function cancel() {
+        google.script.run
+          .removeTempInfo();
+        google.script.host.close();
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="form_submission">    
+      Verify that the information generated is correct before submitting. <br><br>
+      
+      <div>
+      <form id="receiptInfo">
+        
+        <div class="row">
+          <div class="rowLabel">
+            Date: 
+          </div>
+          <div class="rowInput">
+            <input type="text" class="form_info" id="date">
+            <button type="button" onclick="clearField('date')">Clear</button>
+          </div>
+        </div>
+        
+        <br>
+        
+        <div class="row">
+          <div class="rowLabel">        
+            PO Number: 
+          </div>
+          <div class="rowInput">
+            <input type="text" class="form_info" id="po">
+            <button type="button" onclick="clearField('po')">Clear</button>
+          </div>
+        </div>
+        
+        <br>  
+        <div class="row">
+          <div class="rowLabel">
+            Vendor: 
+          </div>
+          <div class="rowInput">
+            <input type ="text" class="form_info" id="vendor">
+            <button type="button" onclick="clearField('vendor')">Clear</button>
+          </div>
+        </div>
+          
+        <br>          
+        <div class="row">
+          <div class="rowLabel">
+            Sales Order: 
+          </div>
+          <div class="rowInput">            
+            <input type="text" class="form_info" id="sales">
+            <button type="button" onclick="clearField('sales')">Clear</button>
+          </div>
+        </div>
+          
+        <br>  
+        <div class="row">
+          <div class="rowLabel">
+            Cost: 
+          </div>
+          <div class="rowInput">
+            <input type="text" class="form_info" id="cost">
+            <button type="button" onclick="clearField('cost')">Clear</button>
+          </div>
+        </div>
+               
+      </form>
+      </div>
+      
+      <br><br><br><br>
+      
+      <div>
+        <button onclick="cancel()">Cancel</button> 
+        <button onclick="submitForm('0')">Submit and Close</button>
+        <button onclick="submitForm('1')">Submit and Add Another Receipt</button>
+      </div>
+      
+    </div>
+    
+
+    <h3>OCR Text Viewer</h3>
+    
+    <h4>Array Preview</h4>
+    <div id="test">
+      <script>
+      </script>
+    </div>
+    
+    <div id="searchResults"></div>
+    
+    <h4>OCR Preview</h4>
+    <div id="ocr"></div>
+        
+    <h3>PDF Preview</h3>
+
+  </body>
+</html>
